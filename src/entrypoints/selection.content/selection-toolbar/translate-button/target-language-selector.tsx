@@ -1,8 +1,9 @@
+import type { LanguageItem } from "@/components/language-combobox-options"
 import { i18n } from "#imports"
 import { Combobox as ComboboxPrimitive } from "@base-ui/react"
 import { IconChevronDown } from "@tabler/icons-react"
 import { useAtom } from "jotai"
-import { useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { filterLanguage, getTargetLanguageItems } from "@/components/language-combobox-options"
 import { Button } from "@/components/ui/base-ui/button"
 import {
@@ -25,17 +26,23 @@ export function TargetLanguageSelector() {
     [language.targetCode, languageItems],
   )
   const title = currentItem?.label ?? i18n.t("side.targetLang")
+  const [open, setOpen] = useState(false)
+  const onValueChange = useCallback((item: LanguageItem | null) => {
+    if (!item || item.value === "auto" || item.value === language.targetCode) {
+      setOpen(false)
+      return
+    }
+
+    void setLanguage({ targetCode: item.value })
+    setOpen(false)
+  }, [language.targetCode, setLanguage])
 
   return (
     <Combobox
+      open={open}
+      onOpenChange={setOpen}
       value={currentItem}
-      onValueChange={(item) => {
-        if (!item || item.value === "auto" || item.value === language.targetCode) {
-          return
-        }
-
-        void setLanguage({ targetCode: item.value })
-      }}
+      onValueChange={onValueChange}
       items={languageItems}
       filter={filterLanguage}
       autoHighlight
